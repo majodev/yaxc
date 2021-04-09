@@ -62,6 +62,7 @@ func NewServer(cfg *YAxCConfig) (s *yAxCServer) {
 		s.Backend = &CacheBackend{
 			cache:   bcache.NewCache(s.DefaultTTL, 10*time.Second),
 			errCast: errors.New("not a string"),
+			errNotFound: errors.New("tuple not found"),
 		}
 	} else {
 		rb := &RedisBackend{

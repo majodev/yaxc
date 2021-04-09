@@ -72,13 +72,9 @@ func (s *yAxCServer) setAnywhereWithHash(ctx *fiber.Ctx, path, hash string) (err
 	}
 
 	// Set contents
-	errVal := s.Backend.Set(path, content, ttl)
-	errHsh := s.Backend.SetHash(path, hash, ttl)
-
-	if errVal != nil || errHsh != nil {
-		log.Warning("ERROR saving Value / MD5Hash:", errVal, errHsh)
-		return ctx.Status(500).SendString(
-			fmt.Sprintf("ERROR (Val): %v\nERROR (Hsh): %v", errVal, errHsh))
+	if err := s.Backend.Set(path, content, hash, ttl); err != nil {
+		log.Warning("ERROR saving anywhere:", err)
+		return ctx.Status(500).SendString(fmt.Sprintf("ERROR: %v", err))
 	}
 
 	fmt.Println(common.StyleServe(),

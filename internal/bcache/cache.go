@@ -1,6 +1,7 @@
 package bcache
 
 import (
+	"log"
 	"sync"
 	"time"
 )
@@ -11,15 +12,15 @@ type node struct {
 }
 
 type Cache struct {
-	mu                sync.Mutex
-	values            map[string]*node
+	values            sync.Map
 	defaultExpiration time.Duration
 	cleanerInterval   time.Duration
+	f map[MapKey]string
 }
+type MapKey []byte
 
 func NewCache(defaultExpiration, cleanerInterval time.Duration) *Cache {
 	c := &Cache{
-		values:            make(map[string]*node),
 		defaultExpiration: defaultExpiration,
 		cleanerInterval:   cleanerInterval,
 	}
@@ -30,24 +31,31 @@ func NewCache(defaultExpiration, cleanerInterval time.Duration) *Cache {
 }
 
 func (c *Cache) Set(key string, value interface{}, expiration time.Duration) {
-	c.mu.Lock()
 	printDebugSet(key, value)
-	c.values[key] = &node{
+	c.values.Store([]byte(key), &node{
 		expires: c.expiration(expiration),
 		value:   value,
-	}
-	c.mu.Unlock()
+	})
 }
 
 func (c *Cache) Get(key string) (interface{}, bool) {
-	c.mu.Lock()
-	if v, o := c.values[key]; o && v != nil {
-		if !v.expires.IsExpired() {
-			printDebugGet(key, v.value)
-			c.mu.Unlock()
-			return v.value, true
-		}
+	log.Println("Cache; GET", key)
+	var v interface{}
+	var o bool
+	if v, o = c.values.Load([]byte(key)); !o {
+		log.Println("-> not in list")
+		return nil, false
 	}
-	c.mu.Unlock()
-	return nil, false
+	// cast
+	var n *node
+	if n, o = v.(*node); !o {
+		log.Println("-> not a node")
+		return nil, false
+	}
+	// expired
+	if n.expires.IsExpired() {
+		log.Println("-> expired")
+		return nil, false
+	}
+	return n.value, true
 }

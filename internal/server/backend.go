@@ -5,9 +5,7 @@ import (
 )
 
 type Backend interface {
-	Get(key string) (string, error)
-	Set(key, value string, ttl time.Duration) error
-
+	GetValue(key string) (string, error)
 	GetHash(key string) (string, error)
-	SetHash(key, value string, ttl time.Duration) error
+	Set(key, value, hash string, ttl time.Duration) error
 }

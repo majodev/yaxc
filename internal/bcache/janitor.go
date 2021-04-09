@@ -1,6 +1,7 @@
 package bcache
 
 import (
+	"log"
 	"time"
 )
 
@@ -16,13 +17,26 @@ func (c *Cache) janitorService() {
 }
 
 func (c *Cache) janitor() {
-	c.mu.Lock()
-	for k, v := range c.values {
-		// nil node
-		if v == nil || v.expires.IsExpired() {
-			printDebugJanitorDelete(k)
-			delete(c.values, k)
+	c.values.Range(func(key, value interface{}) bool {
+		log.Println("* K:", key, "; V:", value)
+		if value == nil {
+			c.values.Delete(key)
+			log.Println("-> * Deleted. (nil):", key)
+			return true
 		}
-	}
-	c.mu.Unlock()
+		// cast
+		if node, ok := value.(*node); ! ok {
+			c.values.Delete(key)
+			log.Println("-> * Deleted. (cast):", key)
+			return true
+		} else {
+			// expired?
+			if node.expires.IsExpired() {
+				c.values.Delete(key)
+				log.Println("-> * Deleted. (expired):", key)
+				return true
+			}
+		}
+		return true
+	})
 }

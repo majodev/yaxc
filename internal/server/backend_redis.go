@@ -13,7 +13,7 @@ type RedisBackend struct {
 	prefixHsh string
 }
 
-func (b *RedisBackend) Get(key string) (res string, err error) {
+func (b *RedisBackend) GetValue(key string) (res string, err error) {
 	return b.get(b.prefixVal, key)
 }
 
@@ -21,12 +21,12 @@ func (b *RedisBackend) GetHash(key string) (res string, err error) {
 	return b.get(b.prefixHsh, key)
 }
 
-func (b *RedisBackend) Set(key, value string, ttl time.Duration) (err error) {
-	return b.set(b.prefixVal, key, value, ttl)
-}
-
-func (b *RedisBackend) SetHash(key, value string, ttl time.Duration) (err error) {
-	return b.set(b.prefixHsh, key, value, ttl)
+func (b *RedisBackend) Set(key, value, hash string, ttl time.Duration) (err error) {
+	if err = b.set(b.prefixVal, key, value, ttl); err != nil {
+		return
+	}
+	err = b.set(b.prefixHsh, key, hash, ttl)
+	return
 }
 
 ///

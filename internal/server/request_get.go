@@ -17,7 +17,8 @@ func (s *yAxCServer) handleGetAnywhere(ctx *fiber.Ctx) (err error) {
 	}
 
 	var res string
-	if res, err = s.Backend.Get(path); err != nil {
+	// get VALUE
+	if res, err = s.Backend.GetValue(path); err != nil {
 		return
 	}
 
