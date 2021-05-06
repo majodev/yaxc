@@ -12,11 +12,6 @@ import (
 
 var errEncryptionNotEnabled = errors.New("encryption not enabled")
 
-func (s *yAxCServer) handlePostAnywhere(ctx *fiber.Ctx) (err error) {
-	path := strings.TrimSpace(ctx.Params("anywhere"))
-	return s.setAnywhereWithHash(ctx, path, "")
-}
-
 func (s *yAxCServer) handlePostAnywhereWithHash(ctx *fiber.Ctx) (err error) {
 	path := strings.TrimSpace(ctx.Params("anywhere"))
 	hash := strings.TrimSpace(ctx.Params("hash"))

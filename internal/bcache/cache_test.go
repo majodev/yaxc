@@ -16,16 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// var cache = fserver.Backend.NewCache(time.Millisecond*1, time.Millisecond*2)
-
-// var server = server.NewServer(&server.YAxCConfig{
-// 	// cache: cache,
-// })
-
-// yep let's have a global cache over all tests
-
-// note: might take some time...
-
 func TestFiberMapMemoryCorruption(t *testing.T) {
 	var s = server.NewServer(&server.YAxCConfig{})
 	s.StartInternal()

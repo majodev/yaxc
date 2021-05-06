@@ -3,17 +3,7 @@ package bcache
 import (
 	"sync"
 	"time"
-
-	"github.com/darmiel/yaxc/internal/common"
-	"github.com/muesli/termenv"
 )
-
-var prefix termenv.Style
-
-func init() {
-	p := common.Profile()
-	prefix = termenv.String("CCHE").Foreground(p.Color("0")).Background(p.Color("#D290E4"))
-}
 
 type node struct {
 	value interface{}
