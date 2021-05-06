@@ -3,12 +3,13 @@ package server
 import (
 	"context"
 	"errors"
+	"os"
+	"time"
+
 	"github.com/darmiel/yaxc/internal/bcache"
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/op/go-logging"
-	"os"
-	"time"
 )
 
 var (

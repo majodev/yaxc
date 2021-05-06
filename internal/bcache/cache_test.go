@@ -3,7 +3,11 @@ package bcache_test
 import (
 	"crypto/md5"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -21,6 +25,62 @@ import (
 // yep let's have a global cache over all tests
 
 // note: might take some time...
+
+func TestFiberMapMemoryCorruption(t *testing.T) {
+	var s = server.NewServer(&server.YAxCConfig{})
+	s.StartInternal()
+	{
+		req := httptest.NewRequest("POST", "/helloworld/8a6a8d0bd78b0da907b091a755e69f61", strings.NewReader("8a6a8d0bd78b0da907b091a755e69f61"))
+		res, err := s.App.Test(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, res.StatusCode)
+		defer res.Body.Close()
+		body, err := ioutil.ReadAll(res.Body)
+		require.NoError(t, err)
+		require.Equal(t, "8a6a8d0bd78b0da907b091a755e69f61", string(body))
+	}
+	{
+		req := httptest.NewRequest("GET", "/hash/helloworld", nil)
+		res, err := s.App.Test(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, res.StatusCode)
+		defer res.Body.Close()
+		body, err := ioutil.ReadAll(res.Body)
+		require.NoError(t, err)
+		require.Equal(t, "8a6a8d0bd78b0da907b091a755e69f61", string(body))
+	}
+}
+
+func TestFuckup(t *testing.T) {
+	var s = server.NewServer(&server.YAxCConfig{})
+
+	for i := 0; i <= 100; i++ {
+
+		var wg sync.WaitGroup
+
+		// go func(t *testing.T) {
+		err := s.Backend.Set("helloworld", "8a6a8d0bd78b0da907b091a755e69f61", time.Second*10000)
+		require.NoError(t, err)
+		err = s.Backend.SetHash("helloworld", "8a6a8d0bd78b0da907b091a755e69f61", time.Millisecond*10000)
+		require.NoError(t, err)
+
+		for i := 0; i <= 100; i++ {
+			wg.Add(1)
+			go func(t *testing.T) {
+				defer wg.Done()
+				str, err := s.Backend.GetHash("helloworld")
+				require.NoError(t, err)
+				require.Equal(t, "8a6a8d0bd78b0da907b091a755e69f61", str)
+			}(t)
+
+		}
+
+		wg.Wait()
+		// }(t)
+
+	}
+}
+
 func TestCacheCorruption(t *testing.T) {
 
 	var server = server.NewServer(&server.YAxCConfig{})

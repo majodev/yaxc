@@ -1,13 +1,14 @@
 package server
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"strings"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
-func (s *yAxCServer) Start() {
+func (s *yAxCServer) StartInternal() {
 	log.Info("Starting YAxC server on", s.BindAddress)
 
 	cfg := &fiber.Config{}
@@ -50,6 +51,10 @@ func (s *yAxCServer) Start() {
 
 	// SET contents, custom hash
 	s.App.Post("/:anywhere/:hash", s.handlePostAnywhereWithHash)
+}
+
+func (s *yAxCServer) Start() {
+	s.StartInternal()
 
 	if err := s.App.Listen(s.BindAddress); err != nil {
 		log.Critical(err)
