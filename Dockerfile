@@ -120,17 +120,17 @@ RUN mkdir -p /tmp/watchexec \
     && cp watchexec-1.14.1-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
-# pdfium pre build library for PDF thumbanils
-# https://github.com/bblanchon/pdfium-binaries/releases
-# used by: https://github.com/brunsgaard/go-pdfium-render
-RUN mkdir -p /tmp/pdfium \
-    && cd /tmp/pdfium \
-    && wget https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F4221/pdfium-linux.tgz \
-    && tar xvf pdfium-linux.tgz \
-    && cp -R include /usr/include/pdfium \
-    && cp lib/libpdfium.so /usr/lib/ \
-    && rm -rf /tmp/pdfium
-COPY pdfium.pc /usr/lib/pkgconfig/
+# # pdfium pre build library for PDF thumbanils
+# # https://github.com/bblanchon/pdfium-binaries/releases
+# # used by: https://github.com/brunsgaard/go-pdfium-render
+# RUN mkdir -p /tmp/pdfium \
+#     && cd /tmp/pdfium \
+#     && wget https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F4221/pdfium-linux.tgz \
+#     && tar xvf pdfium-linux.tgz \
+#     && cp -R include /usr/include/pdfium \
+#     && cp lib/libpdfium.so /usr/lib/ \
+#     && rm -rf /tmp/pdfium
+# COPY pdfium.pc /usr/lib/pkgconfig/
 
 # linux permissions / vscode support: Add user to avoid linux file permission issues
 # Detail: Inside the container, any mounted files/folders will have the exact same permissions

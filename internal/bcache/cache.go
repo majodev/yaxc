@@ -2,7 +2,6 @@ package bcache
 
 import (
 	"sync"
-	"time"
 )
 
 type node struct {
@@ -21,21 +20,20 @@ func NewCache() *Cache {
 	return c
 }
 
-func (c *Cache) Set(key string, value interface{}, expiration time.Duration) {
+func (c *Cache) Set(key string, value interface{}) {
 	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	c.values[key] = &node{
 		value: value,
 	}
-	c.mu.Unlock()
 }
 
 func (c *Cache) Get(key string) (interface{}, bool) {
 	c.mu.Lock()
+	defer c.mu.Unlock()
 	if v, o := c.values[key]; o && v != nil {
-		c.mu.Unlock()
 		return v.value, true
 	}
-	c.mu.Unlock()
 	return nil, false
 }

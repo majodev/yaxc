@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/darmiel/yaxc/internal/bcache"
-	"time"
 )
 
 type CacheBackend struct {
@@ -18,13 +17,13 @@ func (b *CacheBackend) GetHash(key string) (res string, err error) {
 	return b.get("hash::" + key)
 }
 
-func (b *CacheBackend) Set(key, value string, ttl time.Duration) error {
-	b.cache.Set("val::"+key, value, ttl)
+func (b *CacheBackend) Set(key, value string) error {
+	b.cache.Set("val::"+key, value)
 	return nil
 }
 
-func (b *CacheBackend) SetHash(key, value string, ttl time.Duration) error {
-	b.cache.Set("hash::"+key, value, ttl)
+func (b *CacheBackend) SetHash(key, value string) error {
+	b.cache.Set("hash::"+key, value)
 	return nil
 }
 
