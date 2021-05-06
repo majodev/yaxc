@@ -12,15 +12,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Our Makefile / env fully supports parallel job execution
 ENV MAKEFLAGS "-j 8 --no-print-directory"
 
-# postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
-# https://wiki.postgresql.org/wiki/Apt
-# run lsb_release -c inside the container to pick the proper repository flavor
-# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" \
-    | tee /etc/apt/sources.list.d/pgdg.list \
-    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-    | apt-key add -
-
 # Install required system dependencies
 RUN apt-get update \
     && apt-get install -y \
@@ -55,9 +46,7 @@ RUN apt-get update \
     bsdmainutils \
     graphviz \
     xz-utils \
-    postgresql-client-12 \
     icu-devtools \
-    redis-tools \
     # --- END DEVELOPMENT ---
     # 
     && apt-get clean \
@@ -71,19 +60,6 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     update-locale LANG=en_US.UTF-8
 
 ENV LANG en_US.UTF-8
-
-# sql pgFormatter: Integrates with vscode-pgFormatter (we pin pgFormatter.pgFormatterPath for the extension to this version)
-# requires perl to be installed
-# https://github.com/bradymholt/vscode-pgFormatter/commits/master
-# https://github.com/darold/pgFormatter/releases
-RUN mkdir -p /tmp/pgFormatter \
-    && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v5.0.tar.gz \
-    && tar xzf v5.0.tar.gz \
-    && cd pgFormatter-5.0 \
-    && perl Makefile.PL \
-    && make && make install \
-    && rm -rf /tmp/pgFormatter 
 
 # go gotestsum: (this package should NOT be installed via go get)
 # https://github.com/gotestyourself/gotestsum/releases
@@ -100,37 +76,15 @@ RUN mkdir -p /tmp/gotestsum \
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
     | sh -s -- -b $(go env GOPATH)/bin v1.39.0
 
-# go swagger: (this package should NOT be installed via go get) 
-# https://github.com/go-swagger/go-swagger/releases
-RUN curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.26.1/swagger_linux_amd64" \
-    && chmod +x /usr/local/bin/swagger
-
-# lichen: go license util 
-# TODO: Install from static binary as soon as it becomes available.
-# https://github.com/uw-labs/lichen/releases
-RUN go install github.com/uw-labs/lichen@v0.1.3
 
 # watchexec
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/1.14.1/watchexec-1.14.1-x86_64-unknown-linux-gnu.tar.xz \
-    && tar xf watchexec-1.14.1-x86_64-unknown-linux-gnu.tar.xz \
-    && cp watchexec-1.14.1-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/1.15.0/watchexec-1.15.0-x86_64-unknown-linux-gnu.tar.xz \
+    && tar xf watchexec-1.15.0-x86_64-unknown-linux-gnu.tar.xz \
+    && cp watchexec-1.15.0-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
-
-# # pdfium pre build library for PDF thumbanils
-# # https://github.com/bblanchon/pdfium-binaries/releases
-# # used by: https://github.com/brunsgaard/go-pdfium-render
-# RUN mkdir -p /tmp/pdfium \
-#     && cd /tmp/pdfium \
-#     && wget https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F4221/pdfium-linux.tgz \
-#     && tar xvf pdfium-linux.tgz \
-#     && cp -R include /usr/include/pdfium \
-#     && cp lib/libpdfium.so /usr/lib/ \
-#     && rm -rf /tmp/pdfium
-# COPY pdfium.pc /usr/lib/pkgconfig/
 
 # linux permissions / vscode support: Add user to avoid linux file permission issues
 # Detail: Inside the container, any mounted files/folders will have the exact same permissions
@@ -170,76 +124,3 @@ RUN mkdir -p /$GOPATH/pkg && chown -R $USERNAME /$GOPATH
 WORKDIR /app
 ENV GOBIN /app/bin
 ENV PATH $PATH:$GOBIN
-
-### -----------------------
-# --- Stage: builder
-# --- Purpose: Statically built binaries and CI environment
-### -----------------------
-
-FROM development as builder
-WORKDIR /app
-COPY Makefile /app/Makefile
-COPY go.mod /app/go.mod
-COPY go.sum /app/go.sum
-RUN make modules
-COPY tools.go /app/tools.go
-RUN make tools
-COPY . /app/
-RUN make go-build
-
-### -----------------------
-# --- Stage: app
-# --- Purpose: Image for actual deployment
-# --- Prefer https://github.com/GoogleContainerTools/distroless over
-# --- debian:buster-slim https://hub.docker.com/_/debian (if you need apt-get).
-### -----------------------
-
-# Distroless images are minimal and lack shell access.
-# https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
-# The :debug image provides a busybox shell to enter (base-debian10 only, not static).
-# https://github.com/GoogleContainerTools/distroless#debug-images
-FROM gcr.io/distroless/base-debian10:debug as app
-
-# FROM debian:buster-slim as app
-# RUN apt-get update \
-#     && apt-get install -y \
-#     #
-#     # Mandadory minimal linux packages
-#     # Installed at development stage and app stage
-#     # Do not forget to add mandadory linux packages to the base development Dockerfile stage above!
-#     #
-#     # -- START MANDADORY --
-#     ca-certificates \
-#     # --- END MANDADORY ---
-#     #
-#     && apt-get clean \
-#     && rm -rf /var/lib/apt/lists/*
-
-# pdfium
-COPY --from=builder /usr/lib/pkgconfig/pdfium.pc /usr/lib/pkgconfig/
-COPY --from=builder /usr/lib/libpdfium.so /usr/lib/
-COPY --from=builder /usr/include/pdfium /usr/include/pdfium/
-COPY --from=builder /lib/x86_64-linux-gnu/libgcc_s.so.1 /lib
-
-COPY --from=builder /app/bin/app /app/
-COPY --from=builder /app/api/swagger.yml /app/api/
-COPY --from=builder /app/assets /app/assets/
-COPY --from=builder /app/migrations /app/migrations/
-COPY --from=builder /app/web /app/web/
-COPY --from=builder /app/authz /app/authz/
-
-WORKDIR /app
-
-# Must comply to vector form
-# https://github.com/GoogleContainerTools/distroless#entrypoints
-# Sample usage of this image:
-# docker run <image> help
-# docker run <image> db migrate
-# docker run <image> db seed
-# docker run <image> env
-# docker run <image> probe readiness
-# docker run <image> probe liveness
-# docker run <image> server
-# docker run <image> server --migrate
-ENTRYPOINT ["/app/app"]
-CMD ["server", "--migrate"]

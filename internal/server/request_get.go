@@ -10,13 +10,9 @@ func (s *yAxCServer) handleGetHashAnywhere(ctx *fiber.Ctx) (err error) {
 	path := strings.TrimSpace(ctx.Params("anywhere"))
 	var res string
 	if res, err = s.Backend.GetHash(path); err != nil {
-		return
+		ctx.Status(404)
 	}
 
-	if res == "" {
-		ctx.Status(404)
-	} else {
-		ctx.Status(200)
-	}
+	ctx.Status(200)
 	return ctx.SendString(res)
 }
