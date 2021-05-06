@@ -9,8 +9,6 @@ import (
 )
 
 func (s *yAxCServer) StartInternal() {
-	log.Info("Starting YAxC server on", s.BindAddress)
-
 	cfg := &fiber.Config{}
 	if s.ProxyHeader != "" {
 		if s.ProxyHeader == "$proxy" {
@@ -57,6 +55,6 @@ func (s *yAxCServer) Start() {
 	s.StartInternal()
 
 	if err := s.App.Listen(s.BindAddress); err != nil {
-		log.Critical(err)
+		panic(err)
 	}
 }

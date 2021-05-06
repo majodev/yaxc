@@ -1,10 +1,4 @@
 === RUN   TestFiberMapMemoryCorruption
-17:44:44.186 NewServer ▶ INFO 001[0m Encryption: false
-17:44:44.187 StartInternal ▶ INFO 002[0m Starting YAxC server on 
-[;mCCHE[0m <- Set val::helloworld = 8a6a8d0bd78b0da907b091a755e69f61
-[;mCCHE[0m <- Set hash::helloworld = 8a6a8d0bd78b0da907b091a755e69f61
-[;mCCHE[0m -> Get hash::helloworld = orld8d0bd78b0da907b091a755e69f61
-[33m17:44:44.189 handleGetHashAnywhere ▶ WARN 003[0m 0.0.0.0 requested HASH helloworld with result orld8d0bd78b0da907b091a755e69f61
     cache_test.go:50: 
         	Error Trace:	cache_test.go:50
         	Error:      	Not equal: 
@@ -20,6 +14,6 @@
         	Test:       	TestFiberMapMemoryCorruption
 --- FAIL: TestFiberMapMemoryCorruption (0.00s)
 FAIL
-coverage: 51.4% of statements
-FAIL	github.com/darmiel/yaxc/internal/bcache	0.030s
+coverage: 84.6% of statements
+FAIL	github.com/darmiel/yaxc/internal/bcache	0.024s
 FAIL

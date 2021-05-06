@@ -16,11 +16,12 @@ limitations under the License.
 package cmd
 
 import (
+	"log"
+	"time"
+
 	"github.com/darmiel/yaxc/internal/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
-	"time"
 )
 
 // serveCmd represents the serve command
@@ -54,16 +55,6 @@ var serveCmd = &cobra.Command{
 			log.Println("WARN: Infinite body length")
 		}
 
-		// redis
-		redisAddr := viper.GetString("redis-addr")
-		redisPass := viper.GetString("redis-pass")
-		redisDB := viper.GetInt("redis-db")
-		redisPrefixVal := viper.GetString("redis-prefix-value")
-		redisPrefixHsh := viper.GetString("redis-prefix-hash")
-		if redisAddr == "" {
-			log.Println("WARN: Not using redis")
-		}
-
 		// other
 		enableEnc := viper.GetBool("enable-encryption")
 		proxyHeader := viper.GetString("proxy-header")
@@ -71,12 +62,6 @@ var serveCmd = &cobra.Command{
 		// create server & start
 		s := server.NewServer(&server.YAxCConfig{
 			BindAddress: bind,
-			// Redis
-			RedisAddress:   redisAddr,
-			RedisPassword:  redisPass,
-			RedisDatabase:  redisDB,
-			PrefixVal:      redisPrefixVal,
-			RedisPrefixHsh: redisPrefixHsh,
 			// TTL
 			DefaultTTL:    defTTL,
 			MinTTL:        minTTL,

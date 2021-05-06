@@ -3,17 +3,17 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/darmiel/yaxc/internal/common"
-	"github.com/gofiber/fiber/v2"
 	"strings"
 	"time"
+
+	"github.com/darmiel/yaxc/internal/common"
+	"github.com/gofiber/fiber/v2"
 )
 
 var errEncryptionNotEnabled = errors.New("encryption not enabled")
 
 func (s *yAxCServer) handlePostAnywhere(ctx *fiber.Ctx) (err error) {
 	path := strings.TrimSpace(ctx.Params("anywhere"))
-	log.Debug("requested path", path)
 	return s.setAnywhereWithHash(ctx, path, "")
 }
 
@@ -76,7 +76,6 @@ func (s *yAxCServer) setAnywhereWithHash(ctx *fiber.Ctx, path, hash string) (err
 	errHsh := s.Backend.SetHash(path, hash, ttl)
 
 	if errVal != nil || errHsh != nil {
-		log.Warning("ERROR saving Value / MD5Hash:", errVal, errHsh)
 		return ctx.Status(500).SendString(
 			fmt.Sprintf("ERROR (Val): %v\nERROR (Hsh): %v", errVal, errHsh))
 	}
