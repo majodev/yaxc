@@ -75,7 +75,7 @@ var serveCmd = &cobra.Command{
 			RedisAddress:   redisAddr,
 			RedisPassword:  redisPass,
 			RedisDatabase:  redisDB,
-			RedisPrefixVal: redisPrefixVal,
+			PrefixVal:      redisPrefixVal,
 			RedisPrefixHsh: redisPrefixHsh,
 			// TTL
 			DefaultTTL:    defTTL,

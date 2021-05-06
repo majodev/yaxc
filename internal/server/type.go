@@ -25,6 +25,8 @@ func init() {
 }
 
 type YAxCConfig struct {
+	PrefixVal string
+
 	// Address
 	BindAddress string // required
 	// Redis

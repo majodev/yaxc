@@ -1,0 +1,10 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/pdfium
+
+Name: Pdfium
+Description: Open-source PDF rendering engine.
+Version: 1.0
+Cflags: -I${includedir}
+Libs: -L${libdir} -lpdfium

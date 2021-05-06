@@ -1,9 +1,10 @@
 package server
 
 import (
+	"strings"
+
 	"github.com/darmiel/yaxc/internal/common"
 	"github.com/gofiber/fiber/v2"
-	"strings"
 )
 
 func (s *yAxCServer) handleGetAnywhere(ctx *fiber.Ctx) (err error) {
@@ -47,7 +48,7 @@ func (s *yAxCServer) handleGetHashAnywhere(ctx *fiber.Ctx) (err error) {
 		return
 	}
 
-	log.Warning(ctx.IP(), "requested HASH", path, "with result", res, "::", res[:4])
+	// log.Warning(ctx.IP(), "requested HASH", path, "with result", res, "::", res[:4])
 
 	if res == "" {
 		ctx.Status(404)
