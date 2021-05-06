@@ -1,4 +1,4 @@
-package fcache_test
+package bcache_test
 
 import (
 	"crypto/md5"

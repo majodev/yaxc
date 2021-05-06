@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/darmiel/yaxc/internal/fcache"
+	"github.com/darmiel/yaxc/internal/bcache"
 	"time"
 )
 
 type CacheBackend struct {
-	cache   *fcache.Cache
+	cache   *bcache.Cache
 	errCast error
 }
 
@@ -30,10 +30,11 @@ func (b *CacheBackend) SetHash(key, value string, ttl time.Duration) error {
 
 func (b *CacheBackend) get(key string) (res string, err error) {
 	if v, ok := b.cache.Get(key); ok {
-		if s, ok := v.(string); ok {
-			return s, nil
+		if r, o := v.(string); o {
+			res = r
+		} else {
+			err = b.errCast
 		}
-		return "", b.errCast
 	}
-	return "", nil
+	return
 }

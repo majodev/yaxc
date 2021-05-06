@@ -31,7 +31,7 @@ func (s *yAxCServer) handleGetAnywhere(ctx *fiber.Ctx) (err error) {
 		}
 	}
 
-	log.Warning(ctx.IP(), "requested VALUE", path)
+	// log.Warning(ctx.IP(), "requested VALUE", path)
 
 	if res == "" {
 		ctx.Status(404)

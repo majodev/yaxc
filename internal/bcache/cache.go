@@ -1,4 +1,4 @@
-package fcache
+package bcache
 
 import (
 	"fmt"
@@ -21,20 +21,20 @@ type node struct {
 }
 
 type Cache struct {
-	mu              sync.Mutex
-	val             map[string]*node
-	de              time.Duration
-	cleanerInterval time.Duration
+	mu                sync.Mutex
+	values            map[string]*node
+	defaultExpiration time.Duration
+	cleanerInterval   time.Duration
 }
 
 func NewCache(defaultExpiration, cleanerInterval time.Duration) *Cache {
 	c := &Cache{
-		val:             make(map[string]*node),
-		de:              defaultExpiration,
-		cleanerInterval: cleanerInterval,
+		values:            make(map[string]*node),
+		defaultExpiration: defaultExpiration,
+		cleanerInterval:   cleanerInterval,
 	}
 	if cleanerInterval != 0 {
-		go c.janitorService()
+		// go c.janitorService()
 	}
 	return c
 }
@@ -44,12 +44,13 @@ func (c *Cache) Set(key string, value interface{}, expiration time.Duration) {
 
 	// TODO: remove debug
 	fmt.Println(prefix,
+		termenv.String("<-").Foreground(common.Profile().Color("#DBAB79")),
 		"Set",
 		termenv.String(key).Foreground(common.Profile().Color("#A8CC8C")),
 		termenv.String("=").Foreground(common.Profile().Color("#DBAB79")),
 		value)
 
-	c.val[key] = &node{
+	c.values[key] = &node{
 		expires: c.expiration(expiration),
 		value:   value,
 	}
@@ -58,11 +59,12 @@ func (c *Cache) Set(key string, value interface{}, expiration time.Duration) {
 
 func (c *Cache) Get(key string) (interface{}, bool) {
 	c.mu.Lock()
-	if v, o := c.val[key]; o && v != nil {
+	if v, o := c.values[key]; o && v != nil {
 		if !v.expires.IsExpired() {
 
 			// TODO: remove debug
 			fmt.Println(prefix,
+				termenv.String("->").Foreground(common.Profile().Color("#66C2CD")),
 				"Get",
 				termenv.String(key).Foreground(common.Profile().Color("#A8CC8C")),
 				termenv.String("=").Foreground(common.Profile().Color("#DBAB79")),
