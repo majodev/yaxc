@@ -13,7 +13,7 @@ import (
 )
 
 func TestFiberMapMemoryCorruption(t *testing.T) {
-	var s = server.NewServer(&server.YAxCConfig{})
+	var s = server.NewServer()
 	s.StartInternal()
 	// should error in ~20 iterations max...
 	for i := 0; i < 20; i++ {
