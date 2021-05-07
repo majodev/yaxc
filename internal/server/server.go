@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/utils"
 )
 
 type yAxCServer struct {
@@ -49,9 +50,15 @@ func (s *yAxCServer) handleGetHashAnywhere(ctx *fiber.Ctx) (err error) {
 }
 
 func (s *yAxCServer) handlePostAnywhereWithHash(ctx *fiber.Ctx) (err error) {
-	path := strings.TrimSpace(ctx.Params("anywhere"))
-	hash := strings.TrimSpace(ctx.Params("hash")) // replace ct
-	// hash := strings.TrimSpace("8a6a8d0bd78b0da907b091a755e69f61") // replace with "8a6a8d0bd78b0da907b091a755e69f61" to make the tests pass
+
+	// PROBLEMATIC reuse of ctx buffer: path and hash are stored in cache later.
+	// see https://docs.gofiber.io/#zero-allocation
+	// path := strings.TrimSpace(ctx.Params("anywhere"))
+	// hash := strings.TrimSpace(ctx.Params("hash")) // replace ct
+
+	// fix for https://stackoverflow.com/questions/66930097/race-with-mutex-corrupt-data-in-map
+	path := strings.TrimSpace(utils.ImmutableString(ctx.Params("anywhere")))
+	hash := strings.TrimSpace(utils.ImmutableString(ctx.Params("hash")))
 
 	// Read content
 	bytes := ctx.Body()

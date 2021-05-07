@@ -1,3 +1,11 @@
+# Debug only
+
+In response to https://stackoverflow.com/questions/66930097/race-with-mutex-corrupt-data-in-map and https://github.com/darmiel/yaxc/issues/8 .
+
+See `internal/server/cache_test.go` in combination with `handlePostAnywhereWithHash` in `internal/server/server.go` and https://docs.gofiber.io/#zero-allocation
+
+> Because fiber is optimized for high-performance, values returned from fiber.Ctx are not immutable by default and will be re-used across requests. As a rule of thumb, you must only use context values within the handler, and you must not keep any references. As soon as you return from the handler, any values you have obtained from the context will be re-used in future requests and will change below your feet. Here is an example:
+
 # YAxC
 Yet Another Cross Clipboard
 > Allan, please add details!
